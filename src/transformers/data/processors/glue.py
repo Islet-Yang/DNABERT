@@ -191,7 +191,6 @@ class DnaPromProcessor(DataProcessor):
             examples.append(InputExample(guid=guid, text_a=text_a, text_b=None, label=label))
         return examples
 
-
 class DnaSpliceProcessor(DataProcessor):
     """Processor for the DNA promoter data"""
 
@@ -592,8 +591,37 @@ class WnliProcessor(DataProcessor):
             examples.append(InputExample(guid=guid, text_a=text_a, text_b=text_b, label=label))
         return examples
 
+class MyRegression(DataProcessor):
+  """
+  My model to deal with dna regression tasks.
+  """
+
+  def get_labels(self):
+      """See base class."""
+      return [None]
+    
+  def get_train_examples(self, data_dir):
+      logger.info("LOOKING AT {}".format(os.path.join(data_dir, "train.tsv")))
+      return self._create_examples(self._read_tsv(os.path.join(data_dir, "train.tsv")), "train")
+
+  def get_dev_examples(self, data_dir):
+      return self._create_examples(self._read_tsv(os.path.join(data_dir, "dev.tsv")), "dev")
+
+  def _create_examples(self, lines, set_type):
+      """Creates examples for the training and dev sets."""
+      examples = []
+      for (i, line) in enumerate(lines):
+          if i == 0:
+              continue
+          guid = "%s-%s" % (set_type, i)
+          text_a = line[0]
+          label = line[1]
+          examples.append(InputExample(guid=guid, text_a=text_a, text_b=None, label=label))
+      return examples
+
 
 glue_tasks_num_labels = {
+    "myregression": 1,
     "cola": 2,
     "mnli": 3,
     "mrpc": 2,
@@ -610,6 +638,7 @@ glue_tasks_num_labels = {
 }
 
 glue_processors = {
+    "myregression": MyRegression,
     "cola": ColaProcessor,
     "mnli": MnliProcessor,
     "mnli-mm": MnliMismatchedProcessor,
@@ -627,6 +656,7 @@ glue_processors = {
 }
 
 glue_output_modes = {
+    "myregression": "regression",
     "cola": "classification",
     "mnli": "classification",
     "mnli-mm": "classification",

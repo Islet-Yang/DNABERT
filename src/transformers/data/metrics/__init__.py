@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import matplotlib.pyplot as plt
+
 try:
     from scipy.stats import pearsonr, spearmanr
     import numpy as np
@@ -89,6 +92,18 @@ if _has_sklearn:
     def pearson_and_spearman(preds, labels):
         pearson_corr = pearsonr(preds, labels)[0]
         spearman_corr = spearmanr(preds, labels)[0]
+        
+        save_path = '/home/bjyang/code/DNABERT/examples/images'
+        plt.scatter(preds, labels)
+        plt.xlabel('Predictions')
+        plt.ylabel('Labels')
+        plt.title(f'Correlation: {pearson_corr}')
+        os.makedirs(save_path, exist_ok=True)
+        file_count = len(os.listdir(save_path))
+        image_path = os.path.join(save_path, f'image_{file_count + 1}.png')
+        plt.savefig(image_path)
+        plt.clf()
+    
         return {
             "pearson": pearson_corr,
             "spearmanr": spearman_corr,
@@ -126,6 +141,8 @@ if _has_sklearn:
             return {"acc": simple_accuracy(preds, labels)}
         elif task_name == "hans":
             return {"acc": simple_accuracy(preds, labels)}
+        elif task_name == "myregression":
+            return pearson_and_spearman(preds, labels)
         else:
             raise KeyError(task_name)
 
